@@ -162,8 +162,8 @@ table(mcTrain$diagnosis)
 table(mcTest$diagnosis)
 
 table(mc_data$diagnosis)/295*100
-table(mcTrain$diagnosis)/238*100
-table(mcTest$diagnosis)/57*100
+round(table(mcTrain$diagnosis)/238*100, 1)
+round(table(mcTest$diagnosis)/57*100, 1)
 # Yes, looking at percents above shows equal ditributions
 ```
 

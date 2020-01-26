@@ -70,28 +70,28 @@ Next we also want to added the cfDNA concentration from the original Cancer info
 
 ```{r}
 # breast cancer
-brca <- read.csv("C:/Users/User/Box Sync/Projects/Multi_Cancer/Raw_Data/brca_info.csv")
+brca <- read.csv("C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/Raw_Data/brca_info.csv")
   
 # colon cancer
-crc <- read.csv("C:/Users/User/Box Sync/Projects/Multi_Cancer/Raw_Data/crc_info.csv")
+crc <- read.csv("C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/Raw_Data/crc_info.csv")
   
 # glioblastoma
-gbm <- read.csv("C:/Users/User/Box Sync/Projects/Multi_Cancer/Raw_Data/gbm_info.csv")
+gbm <- read.csv("C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/Raw_Data/gbm_info.csv")
   
 # esophageal cancer
-esca <- read.csv("C:/Users/User/Box Sync/Projects/Multi_Cancer/Raw_Data/esca_info.csv")
+esca <- read.csv("C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/Raw_Data/esca_info.csv")
 
 # hepatitis B virus infection
-hbv <- read.csv("C:/Users/User/Box Sync/Projects/Multi_Cancer/Raw_Data/hbv_info.csv")
+hbv <- read.csv("C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/Raw_Data/hbv_info.csv")
 
 # liver cancer
-hcc <- read.csv("C:/Users/User/Box Sync/Projects/Multi_Cancer/Raw_Data/hcc_info.csv")
+hcc <- read.csv("C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/Raw_Data/hcc_info.csv")
 
 # stomach cancer
-stad <- read.csv("C:/Users/User/Box Sync/Projects/Multi_Cancer/Raw_Data/stad_info.csv")
+stad <- read.csv("C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/Raw_Data/stad_info.csv")
 
 # healthy 
-hea <- read.csv("C:/Users/User/Box Sync/Projects/Multi_Cancer/Raw_Data/hea_info.csv")
+hea <- read.csv("C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/Raw_Data/hea_info.csv")
 ```
 
 Merge all diagnoses together and extract seq_num, diagnosis, and cfDNA concentration. There are a few patients in these csvs that had incomplete information, and thus, it looks like some seq_num ids are repeated and given to other patients. The processing below should remove patients with incomplete data and maintain the 373 patient dataset.
@@ -161,9 +161,9 @@ table(mc_data$diagnosis)
 table(mcTrain$diagnosis)
 table(mcTest$diagnosis)
 
-table(mc_data$diagnosis)/276*100
-table(mcTrain$diagnosis)/223*100
-table(mcTest$diagnosis)/53*100
+table(mc_data$diagnosis)/295*100
+table(mcTrain$diagnosis)/238*100
+table(mcTest$diagnosis)/57*100
 # Yes, looking at percents above shows equal ditributions
 ```
 

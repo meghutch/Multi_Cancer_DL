@@ -207,6 +207,8 @@ sum(is.na(mcTest_cs))
 
 Save training and test sets
 ```{r}
+write.csv(mc_data, file = "C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/02_Processed_Data/mc_data.csv", row.names = FALSE)
+
 write.csv(mcTrain, file = "C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/02_Processed_Data/mcTrain_70_30.csv", row.names = FALSE)
 
 write.csv(mcTest, file = "C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/02_Processed_Data/mcTest_70_30.csv", row.names = FALSE)
@@ -215,4 +217,3 @@ write.csv(mcTrain_cs, file = "C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/02
 
 write.csv(mcTest_cs, file = "C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/02_Processed_Data/mcTest_cs_70_30.csv", row.names = FALSE)
 ```
-

@@ -5,7 +5,7 @@ date: "January 9, 2020"
 output: html_document
 ---
 
-Objective: Pre-process genebody and phenotypic data for the Multi-Cancer deep learning analysis.
+Objective: Pre-process genebody and phenotypic data for the Multi-Cancer deep learning analysis
 
 ```{r Packages}
 library(dplyr)

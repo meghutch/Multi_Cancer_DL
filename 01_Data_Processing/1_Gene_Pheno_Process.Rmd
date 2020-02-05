@@ -19,23 +19,23 @@ gene_count <- read.delim2("C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/Raw_D
 # gene annotation
 gene_ano <- read.delim2("C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/Raw_Data/genebody_anno.txt", header = TRUE, sep = "")
 
-# phenotypic data
-#pheno <- read.delim2("C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/Raw_Data/pheno.txt", header = TRUE, sep = "")
-
 # Jan 23: updated phenotypic data
 pheno <- readRDS("C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/Raw_Data/DataInfoFilter.rds")
+
+# Fragment length - final ids in the analysis are in this file
+fl <- read.csv("C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/Raw_Data/DataInfoFilter.csv")
 ```
 
 Map the gene annotations to the gene body data
 
-**Strand + or - ?**
+**strand + or -**
 ```{r}
 gene_ano <- gene_ano %>% select(Geneid)
 
 gene_count <- cbind(gene_ano, gene_count)
 ```
 
-Modify gene count data - transpose to faciliate merging with phenotypic data 
+Modify gene count data - transpose to facilitate merging with phenotypic data 
 
 ```{r}
 # transpose: rows to columns
@@ -125,31 +125,37 @@ mc_data$Cat[mc_data$Cat == "CRN"] <- "HEA"
 
 # Merge with mc_data
 colnames(mc_data)[2] <- "diagnosis"
-mc_data <- inner_join(cohort, mc_data, by = c("seq_num", "diagnosis")) # missing 19 patients?
+mc_data <- inner_join(cohort, mc_data, by = c("seq_num", "diagnosis"))
 ```
 
-Examine all diagnosis information
-
-```{r}
-table(mc_data$diagnosis)
-```
-
-To start - I am going to examine esophageal, liver, colon, and stomach cancer. I will also include healthy patients
+Just keep the cancer patients
 
 ```{r}
 # diagnoses to keep
-dx_keep <- c("CRC", "ESCA", "HCC", "HEA", "STAD")
+dx_keep <- c("CRC", "ESCA", "HCC", "HEA", "STAD", "BRCA", "GBM")
 dx_keep <- as.data.frame(dx_keep)
 colnames(dx_keep) <- "diagnosis"
+```
+
+Add fragment length
+
+Sample size does reduce but the fragment length IDs our are final dataset
+```{r}
+fl <- fl %>% select(seq_num, frag_mean)
+
+# Merge with mc_data
+mc_data <- merge(mc_data, fl, by = "seq_num") 
 mc_data <- mc_data %>% filter(diagnosis %in% dx_keep$diagnosis)
 table(mc_data$diagnosis)
 ```
 
+Training and Testing Splits for all Cancers Separate
+
 Create balanced datasets:
 https://topepo.github.io/caret/data-splitting.html
 ```{r}
-set.seed(3456)
-trainIndex <- createDataPartition(mc_data$diagnosis, p = .8, 
+set.seed(02051)
+trainIndex <- createDataPartition(mc_data$diagnosis, p = .7, 
                                   list = FALSE, 
                                   times = 1)
 head(trainIndex)
@@ -161,9 +167,9 @@ table(mc_data$diagnosis)
 table(mcTrain$diagnosis)
 table(mcTest$diagnosis)
 
-table(mc_data$diagnosis)/295*100
-round(table(mcTrain$diagnosis)/238*100, 1)
-round(table(mcTest$diagnosis)/57*100, 1)
+round(table(mc_data$diagnosis)/342*100, 1)
+round(table(mcTrain$diagnosis)/242*100, 1)
+round(table(mcTest$diagnosis)/100*100, 1)
 # Yes, looking at percents above shows equal ditributions
 ```
 
@@ -173,10 +179,40 @@ sum(is.na(mcTrain))
 sum(is.na(mcTest))
 ```
 
+Combined Colon and Stomach Cancer 
+
+```{r}
+# Copy training and testing datasets into new dataframes
+mcTrain_cs <- mcTrain
+mcTest_cs <- mcTest
+
+# combine Colon and Stomach Cancer
+mcTrain_cs$diagnosis[mcTrain_cs$diagnosis == "CRC" | mcTrain_cs$diagnosis == "STAD"] <- "CRC_STAD"
+
+mcTest_cs$diagnosis[mcTest_cs$diagnosis == "CRC" | mcTest_cs$diagnosis == "STAD"] <- "CRC_STAD"
+
+table(mcTrain_cs$diagnosis)
+table(mcTest_cs$diagnosis)
+
+round(table(mcTrain_cs$diagnosis)/242*100, 1)
+round(table(mcTest_cs$diagnosis)/100*100, 1)
+# Yes, looking at percents above shows equal ditributions
+```
+
+Check if any missing values: none!
+```{r}
+sum(is.na(mcTrain_cs))
+sum(is.na(mcTest_cs))
+```
+
 Save training and test sets
 ```{r}
-write.csv(mcTrain, file = "C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/02_Processed_Data/mcTrain.csv", row.names = FALSE)
+write.csv(mcTrain, file = "C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/02_Processed_Data/mcTrain_70_30.csv", row.names = FALSE)
 
-write.csv(mcTest, file = "C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/02_Processed_Data/mcTest.csv", row.names = FALSE)
+write.csv(mcTest, file = "C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/02_Processed_Data/mcTest_70_30.csv", row.names = FALSE)
+
+write.csv(mcTrain_cs, file = "C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/02_Processed_Data/mcTrain_cs_70_30.csv", row.names = FALSE)
+
+write.csv(mcTest_cs, file = "C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/02_Processed_Data/mcTest_cs_70_30.csv", row.names = FALSE)
 ```
 

@@ -10,6 +10,7 @@ Objective: Pre-process genebody and phenotypic data for the Multi-Cancer deep le
 ```{r Packages}
 library(dplyr)
 library(caret)
+library(DESeq2)
 ```
 
 ```{r Import Data}
@@ -50,10 +51,111 @@ colnames(gene_count_t) <- gene_col_names
 # remove the geneids from the first row
 gene_count_t <- gene_count_t[-1,]
 
+# convert to dataframe
 gene_count_t <- as.data.frame(gene_count_t)
 
 # temporarily covert rownames to first column
 gene_count_t <- tibble::rownames_to_column(gene_count_t, "seq_num")
+```
+
+Add disease to the dataframe
+```{r}
+disease_vars <- pheno %>% select(seq_num, Cat)
+
+# In the new pheno dataset - some of the healthy patients were given the label CRN to identify non-colon cancers. These are also healthy patients and so I am going to change the label as such
+disease_vars$Cat[disease_vars$Cat == "CRN"] <- "HEA"
+
+# Bind to the genes_count_t dataframe
+gene_count_t <- full_join(gene_count_t, disease_vars, by = "seq_num")
+```
+
+Add Fragment Length (this is the finalized patient list, so if a patient isn't included they will be removed from our gene_count_t df)
+
+We have 342 final patients
+```{r}
+fl <- fl %>% select(seq_num, frag_mean)
+
+# Merge with gene_counts
+gene_count_t  <- merge(gene_count_t, fl, by = "seq_num") 
+
+# Will remove fragment length for now because we shouldn't keep in the gene dataset when normalizing
+gene_count_t$frag_mean <- NULL
+```
+
+Keep only cancer samples + healthy patients
+```{r}
+# diagnoses to keep
+dx_keep <- c("CRC", "ESCA", "HCC", "HEA", "STAD", "BRCA", "GBM")
+dx_keep <- as.data.frame(dx_keep)
+colnames(dx_keep) <- "Cat"
+
+# keep only diagnoses of interst
+gene_count_t <- gene_count_t %>% filter(Cat %in% dx_keep$Cat)
+```
+
+Re-transpose gene counts and create a new dataset, this will be important for trying to normalize data using DEseq2
+
+```{r}
+# create a copy of the df
+gene_count_2t <- gene_count_t 
+
+# remove disease cat column
+gene_count_2t$Cat <- NULL
+
+# Transpose gene_count_t back
+gene_count_2t <- t(gene_count_2t)
+
+# convert first row to header
+gene_col_names <- gene_count_2t[1,]
+
+# transpose column names
+colnames(gene_count_2t) <- gene_col_names
+
+# convert to dataframe
+gene_count_2t <- as.data.frame(gene_count_2t)
+
+# remove the firt row as it is a column now
+gene_count_2t <- gene_count_2t[-1,]
+
+# temporarily covert rownames to first column
+#gene_count_2t <- tibble::rownames_to_column(gene_count_2t, "Geneid")
+```
+
+
+Normalize gene counts using deseq2 and normalizing by disease type
+
+Reference: https://hbctraining.github.io/DGE_workshop/lessons/02_DGE_count_normalization.html
+http://bioconductor.org/packages/release/bioc/manuals/DESeq2/man/DESeq2.pdf
+```{r}
+# Convert factors to numeric
+which( colnames(gene_count_t)=="Cat" ) # don't transform this column --> NA!
+cols = c(2:19101)    
+gene_count_t[,cols] = apply(gene_count_t[,cols], 2, function(x) as.numeric(as.character(x)))
+
+cols = c(1:342)    
+gene_count_2t[,cols] = apply(gene_count_2t[,cols], 2, function(x) as.numeric(as.character(x)))
+
+## Create DESeq2Dataset object where ~ 1 indicates no design
+dds <- DESeqDataSetFromMatrix(countData = as.matrix(gene_count_2t), colData = gene_count_t, design = ~Cat)
+
+# run deseq
+dds <- DESeq(dds)
+
+#**should design be based on diagnosis? or just indiviudal patient? healthy vs disease? How are unbalanced datasets handled here?
+results <- results(dds)
+summary(results)
+
+# To retrieve the normalized counts:
+normalized_counts <- counts(dds, normalized=TRUE)
+
+# transpose data
+normalized_counts <- t(normalized_counts)
+
+# convert to dataframe
+normalized_counts <- as.data.frame(normalized_counts)
+
+# convert row names to first column
+normalized_counts <- tibble::rownames_to_column(normalized_counts, "seq_num")
 ```
 
 Process the phenotypic data - we will be focusing on age and gender first
@@ -63,7 +165,7 @@ pheno_vars <- pheno %>% select(seq_num, Cat, age, gender)
 
 Merge phenotypic data with the gene_count data - mc_data frame will be our final dataframe
 ```{r}
-mc_data <- inner_join(pheno_vars, gene_count_t, by = "seq_num")
+mc_data <- inner_join(pheno_vars, normalized_counts, by = "seq_num")
 ```
 
 Next we also want to added the cfDNA concentration from the original Cancer info excel file. This was split into separate csvs for each diagnosis and include cfDNA concentration. I will process this data and add to the mc_data df.
@@ -94,7 +196,7 @@ stad <- read.csv("C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/Raw_Data/stad_
 hea <- read.csv("C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/Raw_Data/hea_info.csv")
 ```
 
-Merge all diagnoses together and extract seq_num, diagnosis, and cfDNA concentration. There are a few patients in these csvs that had incomplete information, and thus, it looks like some seq_num ids are repeated and given to other patients. The processing below should remove patients with incomplete data and maintain the 373 patient dataset.
+Merge all diagnoses together and extract seq_num, diagnosis, and cfDNA concentration. There are a few patients in these csvs that had incomplete information, and thus, it looks like some seq_num ids are repeated and given to other patients. 
 ```{r}
 brca <- brca %>% select(seq_num, diagnosis, dilute_library_concentration)
 
@@ -128,16 +230,7 @@ colnames(mc_data)[2] <- "diagnosis"
 mc_data <- inner_join(cohort, mc_data, by = c("seq_num", "diagnosis"))
 ```
 
-Just keep the cancer patients
-
-```{r}
-# diagnoses to keep
-dx_keep <- c("CRC", "ESCA", "HCC", "HEA", "STAD", "BRCA", "GBM")
-dx_keep <- as.data.frame(dx_keep)
-colnames(dx_keep) <- "diagnosis"
-```
-
-Add fragment length
+Add Fragment Length
 
 Sample size does reduce but the fragment length IDs our are final dataset
 ```{r}
@@ -145,8 +238,7 @@ fl <- fl %>% select(seq_num, frag_mean)
 
 # Merge with mc_data
 mc_data <- merge(mc_data, fl, by = "seq_num") 
-mc_data <- mc_data %>% filter(diagnosis %in% dx_keep$diagnosis)
-table(mc_data$diagnosis)
+table(mc_data$Cat)
 ```
 
 Training and Testing Splits for all Cancers Separate

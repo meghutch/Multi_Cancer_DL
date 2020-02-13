@@ -124,8 +124,15 @@ gene_count_2t <- gene_count_2t[-1,]
 
 Normalize gene counts using deseq2 and normalizing by disease type
 
-Reference: https://hbctraining.github.io/DGE_workshop/lessons/02_DGE_count_normalization.html
-http://bioconductor.org/packages/release/bioc/manuals/DESeq2/man/DESeq2.pdf
+References: 
+
+* https://hbctraining.github.io/DGE_workshop/lessons/02_DGE_count_normalization.html
+
+* http://bioconductor.org/packages/release/bioc/manuals/DESeq2/man/DESeq2.pdf
+
+* http://www.sthda.com/english/wiki/rna-seq-differential-expression-work-flow-using-deseq2
+
+* https://lashlock.github.io/compbio/R_presentation.html
 ```{r}
 # Convert factors to numeric
 which( colnames(gene_count_t)=="Cat" ) # don't transform this column --> NA!
@@ -135,15 +142,21 @@ gene_count_t[,cols] = apply(gene_count_t[,cols], 2, function(x) as.numeric(as.ch
 cols = c(1:342)    
 gene_count_2t[,cols] = apply(gene_count_2t[,cols], 2, function(x) as.numeric(as.character(x)))
 
+# relevel the Cat so that healhy is the reference
+gene_count_t$Cat <- as.factor(gene_count_t$Cat)
+gene_count_t$Cat <- relevel(gene_count_t$Cat, ref="HEA")
+
 ## Create DESeq2Dataset object where ~ 1 indicates no design
 dds <- DESeqDataSetFromMatrix(countData = as.matrix(gene_count_2t), colData = gene_count_t, design = ~Cat)
 
-# run deseq
-dds <- DESeq(dds)
+# run deseq - I believe this is the whole RNA seq DEG pipeline - this performs normalization but also includes other steps 
+#dds <- DESeq(dds)
 
-#**should design be based on diagnosis? or just indiviudal patient? healthy vs disease? How are unbalanced datasets handled here?
-results <- results(dds)
-summary(results)
+# This performs the median of ratios method of normalization
+dds <- estimateSizeFactors(dds)
+
+# View normalization factor
+sizeFactors(dds)
 
 # To retrieve the normalized counts:
 normalized_counts <- counts(dds, normalized=TRUE)
@@ -238,7 +251,7 @@ fl <- fl %>% select(seq_num, frag_mean)
 
 # Merge with mc_data
 mc_data <- merge(mc_data, fl, by = "seq_num") 
-table(mc_data$Cat)
+table(mc_data$diagnosis)
 ```
 
 Training and Testing Splits for all Cancers Separate

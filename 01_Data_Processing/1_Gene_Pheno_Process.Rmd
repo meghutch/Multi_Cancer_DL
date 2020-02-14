@@ -152,7 +152,7 @@ dds <- DESeqDataSetFromMatrix(countData = as.matrix(gene_count_2t), colData = ge
 # run deseq - I believe this is the whole RNA seq DEG pipeline - this performs normalization but also includes other steps 
 #dds <- DESeq(dds)
 
-# This performs the median of ratios method of normalization
+# This performs the median of ratios method of normalization - not sure if it takes into account the design specifications? 
 dds <- estimateSizeFactors(dds)
 
 # View normalization factor

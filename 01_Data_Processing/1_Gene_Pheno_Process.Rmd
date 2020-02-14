@@ -310,29 +310,7 @@ sum(is.na(mcTrain_cs))
 sum(is.na(mcTest_cs))
 ```
 
-Subset the normalized genes for each training and testing set - this will be neccessary for feature selection by Random forest and eleastic net regression
-```{r}
-mcTrain_genes <- merge(normalized_counts, mcTrain, by = "seq_num")
-
-mcTest_genes <- merge(normalized_counts, mcTest, by = "seq_num")
-
-mcTrain_cs_genes <- merge(normalized_counts, mcTrain_cs, by = "seq_num")
-
-mcTest_cs_genes <- merge(normalized_counts, mcTest_cs, by = "seq_num")
-```
-
-Remove un-needed columns
-```{r}
-mcTrain_genes <- mcTrain_genes %>% select(-age, -dilute_library_concentration, -gender, -frag_mean)
-
-mcTest_genes <- mcTest_genes %>% select(-age, -dilute_library_concentration, -gender, -frag_mean)
-
-mcTrain_cs_genes <- mcTrain_cs_genes %>% select(-age, -dilute_library_concentration, -gender, -frag_mean)
-
-mcTest_cs_genes <- mcTest_cs_genes %>% select(-age, -dilute_library_concentration, -gender, -frag_mean)
-```
-
-Save training and test sets - **Pay Attention to How we Save the Output based on data splits!**
+Save training and test sets
 ```{r}
 write.csv(mc_data, file = "C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/02_Processed_Data/mc_data.csv", row.names = FALSE)
 
@@ -343,12 +321,4 @@ write.csv(mcTest, file = "C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/02_Pro
 write.csv(mcTrain_cs, file = "C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/02_Processed_Data/mcTrain_cs_70_30.csv", row.names = FALSE)
 
 write.csv(mcTest_cs, file = "C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/02_Processed_Data/mcTest_cs_70_30.csv", row.names = FALSE)
-
-write.csv(mcTrain_genes, file = "C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/02_Processed_Data/mcTrain_genes_70_30.csv", row.names = FALSE)
-
-write.csv(mcTest_genes, file = "C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/02_Processed_Data/mcTest_genes_70_30.csv", row.names = FALSE)
-
-write.csv(mcTrain_cs_genes, file = "C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/02_Processed_Data/mcTrain_cs_genes_70_30.csv", row.names = FALSE)
-
-write.csv(mcTest_cs_genes, file = "C:/Users/User/Box Sync/Projects/Multi_Cancer_DL/02_Processed_Data/mcTest_cs_genes_70_30.csv", row.names = FALSE)
 ```

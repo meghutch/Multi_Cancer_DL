@@ -15,7 +15,7 @@
 # 
 # Note: This is the new version of the script where we normalize gene counts using DEseq2 in the initial pre-processing script in R. This provided more than double the number of Principal Components that make up 90% of the variance (157). Regardless, we will begin running the deep learning classifier on the revised data. 
 
-# In[66]:
+# In[1]:
 
 
 import pandas as pd
@@ -26,18 +26,19 @@ import matplotlib.colors
 import seaborn as sns
 
 
-# In[67]:
+# In[2]:
 
 
 # set working directory for git hub
 import os
-os.chdir('/projects/p31049/Multi_Cancer_DL/')
+#os.chdir('/projects/p31049/Multi_Cancer_DL/')
+os.chdir('C:\\Users\\User\\Box Sync/Projects/Multi_Cancer_DL/')
 os. getcwd()
 
 
 # **Import Training, Testing, and Principal component data**
 
-# In[68]:
+# In[3]:
 
 
 # Training set
@@ -50,7 +51,7 @@ genesTrain_transformed_90 = pd.read_csv('02_Processed_Data/genesTrain_transforme
 genesTest_transformed_90 = pd.read_csv('02_Processed_Data/genesTest_transformed_157pc_70_30.csv')
 
 
-# In[69]:
+# In[4]:
 
 
 mcTrain.head()
@@ -59,7 +60,7 @@ genesTrain_transformed_90.head()
 
 # # **Pre-Process Data**
 
-# In[70]:
+# In[5]:
 
 
 # remove genetic data from the mcTrain dataset
@@ -69,7 +70,7 @@ mcTrain = mcTrain[['seq_num','diagnosis', 'dilute_library_concentration', 'age',
 mcTest = mcTest[['seq_num','diagnosis', 'dilute_library_concentration', 'age', 'gender', 'frag_mean']]
 
 
-# In[71]:
+# In[6]:
 
 
 # rename the first column name of the PC dataframes
@@ -77,7 +78,7 @@ genesTrain_transformed_90.rename(columns={'Unnamed: 0':'seq_num'}, inplace=True)
 genesTest_transformed_90.rename(columns={'Unnamed: 0':'seq_num'}, inplace=True)
 
 
-# In[72]:
+# In[7]:
 
 
 # merge PCs with clinical/phenotypic data
@@ -89,7 +90,7 @@ mcTest = pd.merge(mcTest, genesTest_transformed_90, how="left", on="seq_num")
 # 
 # Currently, all disease states are in order - we don't want to feed to the network in order!
 
-# In[73]:
+# In[8]:
 
 
 import random
@@ -102,7 +103,7 @@ mcTest = mcTest.sample(frac=1, axis = 0).reset_index(drop=True)
 # 
 # For future code we want the index to be numeric
 
-# In[74]:
+# In[9]:
 
 
 # Create new ids
@@ -116,7 +117,7 @@ mcTest = mcTest.drop(columns=["seq_num", "dilute_library_concentration", "age", 
 
 # **Remove Labels (Diagnosis) from the datasets**
 
-# In[75]:
+# In[10]:
 
 
 mcTrain_x = mcTrain.drop(columns=["diagnosis"])
@@ -125,21 +126,21 @@ mcTest_x = mcTest.drop(columns=["diagnosis"])
 
 # **Create Labeled Datasets**
 
-# In[76]:
+# In[11]:
 
 
 mcTrain_y = mcTrain[['id','diagnosis']]
 mcTest_y = mcTest[['id','diagnosis']]
 
 
-# In[77]:
+# In[12]:
 
 
 # Examine the unique target variables
 mcTrain_y.diagnosis.unique()
 
 
-# In[78]:
+# In[13]:
 
 
 # Replace each outcome target with numerical value
@@ -162,7 +163,7 @@ mcTest_y = mcTest_y.replace('BRCA', 6)
 
 # **Convert seq_num id to index**
 
-# In[79]:
+# In[14]:
 
 
 mcTrain_x = mcTrain_x.set_index('id')
@@ -178,7 +179,7 @@ mcTest_y = mcTest_y.set_index('id')
 # 
 # Normalization will rescale our values into range of [0,1]. We need to normalize both the training and test sets
 
-# In[80]:
+# In[15]:
 
 
 from sklearn.preprocessing import MinMaxScaler
@@ -202,7 +203,7 @@ mcTest_x = pd.DataFrame(mcTest_x, columns = cols, index = index_test)
 
 # # **Downsampling**
 
-# In[81]:
+# In[16]:
 
 
 # Subset healthy patients
@@ -213,31 +214,29 @@ class0 = class0.head(30)
 class0 = class0.index.tolist()
 
 mcTrain_y = mcTrain_y[~mcTrain_y.index.isin(class0)]
-#print(mcTrain_y.head(20))
+print(mcTrain_y.head(20))
 
 # Print the cases we wanted to remove
-#print(class0)
+print(class0)
 
 #Observe class distributions
 class0_new = mcTrain_y[mcTrain_y.diagnosis == 0]
-#print('# Healthy Patients', class0_new.shape) # shoud be 31
-#print('# Full Training Set', mcTrain_y.shape)
+print('# Healthy Patients', class0_new.shape) # shoud be 31
+print('# Full Training Set', mcTrain_y.shape)
 
 
 # **Remove excess healthy patients from the input training set and original dataset**
 
-# In[83]:
+# In[17]:
 
 
 mcTrain_x = mcTrain_x[~mcTrain_x.index.isin(class0)]
-#print('# Full Training Set', mcTrain_x)
-
-mcTrain = mcTrain[~mcTrain.index.isin(class0)]
+print('# Full Training Set', mcTrain_x)
 
 
 # # Construct & Run Neural Network
 
-# In[84]:
+# In[18]:
 
 
 # Import PyTorch packages
@@ -253,7 +252,7 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 
 
-# In[86]:
+# In[19]:
 
 
 # define list for results
@@ -324,7 +323,7 @@ for index in range (0, 212): # 212 observations when we downsample healthy patie
     criterion = nn.CrossEntropyLoss() #don't use with softmax or sigmoid- PyTorch manual indicates "This criterion combines nn.LogSoftmax() and nn.NLLLoss() in one single class."
     
     # Set epochs - number of times the entire dataset will pass through the network
-    epochs = 500
+    epochs = 100
     for e in range(epochs):
         # Define running loss as 0
         running_loss = 0
@@ -344,8 +343,8 @@ for index in range (0, 212): # 212 observations when we downsample healthy patie
         
             running_loss += loss.item() # loss.item() gets the scalar value held in the loss. 
             # += function: Adds the running_loss (0) with loss.item and assigns back to running_loss
-        #else:
-        #    print("Epoch {}/{}, Training loss: {:.5f}".format(e+1, epochs, running_loss/len(trainloader)))
+        else:
+            print("Epoch {}/{}, Training loss: {:.5f}".format(e+1, epochs, running_loss/len(trainloader)))
 
     # Apply the model to the testing dataset
     # Thus will enable us to see the predictions for each class
@@ -391,31 +390,31 @@ for index in range (0, 212): # 212 observations when we downsample healthy patie
     results_ls.append(results)
     incorrect_ls.append(incorrect)
     correct_ls.append(correct)
-    #print(results_ls) 
+    print(results_ls) 
 
 
 # # **Print out description of Experiment**
 
-# In[ ]:
+# In[21]:
 
 
-print('Hidden Layers: 50,  Weight Decay:0.1,  LR:0.10 , Epochs: 500, Notes: Downsampled')
+print('Hidden Layers:, Weight Decay: LR: , Epochs:')
 
 
 # # **Determine LOOCV Mean Error**
 
-# In[ ]:
+# In[22]:
 
 
 percent_correct = sum(results_ls)
-percent_correct = percent_correct/len(mcTrain)*100
+percent_correct = percent_correct/len(mcTrain_y)*100
 percent_incorrect = 100 - percent_correct
 print('Percent Error', round(percent_incorrect, 1))
 
 
 # # **Incorrect Predictions**
 
-# In[ ]:
+# In[35]:
 
 
 ## Remove the correct elements from the ls to faciliate transforming this list into a dataframe
@@ -435,7 +434,8 @@ incorrect_pred.reset_index(level=0, inplace=True)
 incorrect_pred['diagnosis'] = incorrect_pred['diagnosis'].map({0: 'HEA', 1: 'CRC', 2: 'ESCA', 3: 'HCC', 4: 'STAD', 5:'GBM', 6:'BRCA'})
 
 # Add a column with the number of cases in each class
-class_size = mcTrain.groupby(['diagnosis']).size()
+mcTrain_y['diagnosis'] = mcTrain_y['diagnosis'].map({0: 'HEA', 1: 'CRC', 2: 'ESCA', 3: 'HCC', 4: 'STAD', 5:'GBM', 6:'BRCA'})
+class_size = mcTrain_y.groupby(['diagnosis']).size()
 class_size = pd.DataFrame(class_size)
 class_size.columns = ['Sample_n']
 
@@ -451,7 +451,7 @@ print(round(incorrect_pred, 1))
 
 # # **Correct Predictions**
 
-# In[ ]:
+# In[36]:
 
 
 ## Remove the incorrect elements from the ls to faciliate transforming this list into a dataframe
@@ -471,7 +471,7 @@ correct_pred.reset_index(level=0, inplace=True)
 correct_pred['diagnosis'] = correct_pred['diagnosis'].map({0: 'HEA', 1: 'CRC', 2: 'ESCA', 3: 'HCC', 4: 'STAD', 5:'GBM', 6:'BRCA'})
 
 # Add a column with the number of cases in each class
-class_size = mcTrain.groupby(['diagnosis']).size()
+class_size = mcTrain_y.groupby(['diagnosis']).size()
 class_size = pd.DataFrame(class_size)
 class_size.columns = ['Sample_n']
 

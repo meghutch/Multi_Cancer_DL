@@ -31,8 +31,8 @@ import seaborn as sns
 
 # set working directory for git hub
 import os
-#os.chdir('/projects/p31049/Multi_Cancer_DL/')
-os.chdir('C:\\Users\\User\\Box Sync/Projects/Multi_Cancer_DL/')
+os.chdir('/projects/p31049/Multi_Cancer_DL/')
+#os.chdir('C:\\Users\\User\\Box Sync/Projects/Multi_Cancer_DL/')
 os. getcwd()
 
 
@@ -317,13 +317,13 @@ for index in range (0, 212): # 212 observations when we downsample healthy patie
     #optimizer = optim.SGD(model.parameters(), lr=0.003)
 
     # Set Adam optimizer: similar to stochastic gradient descent, but uses momentum which can speed up the actual fitting process, and it also adjusts the learning rate for each of the individual parameters in the model
-    optimizer = optim.Adam(model.parameters(), lr=0.10,  weight_decay=0.01) # we can also change momentum parameter
+    optimizer = optim.Adam(model.parameters(), lr=0.01,  weight_decay=0.01) # we can also change momentum parameter
 
     # loss function
     criterion = nn.CrossEntropyLoss() #don't use with softmax or sigmoid- PyTorch manual indicates "This criterion combines nn.LogSoftmax() and nn.NLLLoss() in one single class."
     
     # Set epochs - number of times the entire dataset will pass through the network
-    epochs = 100
+    epochs = 500
     for e in range(epochs):
         # Define running loss as 0
         running_loss = 0
@@ -398,7 +398,7 @@ for index in range (0, 212): # 212 observations when we downsample healthy patie
 # In[21]:
 
 
-print('Hidden Layers:, Weight Decay: LR: , Epochs:')
+print('Hidden Layers: 50, Weight Decay: 0.10, LR: 0.01 , Epochs: 500')
 
 
 # # **Determine LOOCV Mean Error**

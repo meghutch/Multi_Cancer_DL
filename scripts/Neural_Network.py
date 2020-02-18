@@ -224,13 +224,15 @@ class0_new = mcTrain_y[mcTrain_y.diagnosis == 0]
 #print('# Full Training Set', mcTrain_y.shape)
 
 
-# **Remove excess healthy patients from the input training set**
+# **Remove excess healthy patients from the input training set and original dataset**
 
 # In[83]:
 
 
 mcTrain_x = mcTrain_x[~mcTrain_x.index.isin(class0)]
 #print('# Full Training Set', mcTrain_x)
+
+mcTrain = mcTrain[~mcTrain.index.isin(class0)]
 
 
 # # Construct & Run Neural Network
@@ -308,25 +310,21 @@ for index in range (0, 212): # 212 observations when we downsample healthy patie
     #epochs = [100, 150, 200, 250]
     
     # Define the model with hidden layers
-    model = nn.Sequential(nn.Linear(157, 125),
+    model = nn.Sequential(nn.Linear(157, 50),
                           nn.ReLU(),
-                          nn.Linear(125, 75), 
-                          nn.ReLU(), 
-                          nn.Linear(75, 25), 
-			  nn.ReLU(), 
-			  nn.Linear(25, 7))
+                          nn.Linear(50, 7))
                       
     # Set Stoachastic Gradient Descent Optimizer and the learning rate
     #optimizer = optim.SGD(model.parameters(), lr=0.003)
 
     # Set Adam optimizer: similar to stochastic gradient descent, but uses momentum which can speed up the actual fitting process, and it also adjusts the learning rate for each of the individual parameters in the model
-    optimizer = optim.Adam(model.parameters(), lr=0.001,  weight_decay=0.01) # we can also change momentum parameter
+    optimizer = optim.Adam(model.parameters(), lr=0.10,  weight_decay=0.01) # we can also change momentum parameter
 
     # loss function
     criterion = nn.CrossEntropyLoss() #don't use with softmax or sigmoid- PyTorch manual indicates "This criterion combines nn.LogSoftmax() and nn.NLLLoss() in one single class."
     
     # Set epochs - number of times the entire dataset will pass through the network
-    epochs = 300
+    epochs = 500
     for e in range(epochs):
         # Define running loss as 0
         running_loss = 0
@@ -401,7 +399,7 @@ for index in range (0, 212): # 212 observations when we downsample healthy patie
 # In[ ]:
 
 
-print('Hidden Layers: 125,75,25,  Weight Decay:0.1,  LR:0.001 , Epochs: 300, Notes: Downsampled')
+print('Hidden Layers: 50,  Weight Decay:0.1,  LR:0.10 , Epochs: 500, Notes: Downsampled')
 
 
 # # **Determine LOOCV Mean Error**
@@ -437,7 +435,7 @@ incorrect_pred.reset_index(level=0, inplace=True)
 incorrect_pred['diagnosis'] = incorrect_pred['diagnosis'].map({0: 'HEA', 1: 'CRC', 2: 'ESCA', 3: 'HCC', 4: 'STAD', 5:'GBM', 6:'BRCA'})
 
 # Add a column with the number of cases in each class
-class_size = mcTrain_x.groupby(['diagnosis']).size()
+class_size = mcTrain.groupby(['diagnosis']).size()
 class_size = pd.DataFrame(class_size)
 class_size.columns = ['Sample_n']
 
@@ -473,7 +471,7 @@ correct_pred.reset_index(level=0, inplace=True)
 correct_pred['diagnosis'] = correct_pred['diagnosis'].map({0: 'HEA', 1: 'CRC', 2: 'ESCA', 3: 'HCC', 4: 'STAD', 5:'GBM', 6:'BRCA'})
 
 # Add a column with the number of cases in each class
-class_size = mcTrain_x.groupby(['diagnosis']).size()
+class_size = mcTrain.groupby(['diagnosis']).size()
 class_size = pd.DataFrame(class_size)
 class_size.columns = ['Sample_n']
 

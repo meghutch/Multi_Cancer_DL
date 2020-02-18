@@ -214,15 +214,15 @@ class0 = class0.head(30)
 class0 = class0.index.tolist()
 
 mcTrain_y = mcTrain_y[~mcTrain_y.index.isin(class0)]
-print(mcTrain_y.head(20))
+#print(mcTrain_y.head(20))
 
 # Print the cases we wanted to remove
-print(class0)
+#print(class0)
 
 #Observe class distributions
 class0_new = mcTrain_y[mcTrain_y.diagnosis == 0]
-print('# Healthy Patients', class0_new.shape) # shoud be 31
-print('# Full Training Set', mcTrain_y.shape)
+#print('# Healthy Patients', class0_new.shape) # shoud be 31
+#print('# Full Training Set', mcTrain_y.shape)
 
 
 # **Remove excess healthy patients from the input training set and original dataset**
@@ -231,7 +231,7 @@ print('# Full Training Set', mcTrain_y.shape)
 
 
 mcTrain_x = mcTrain_x[~mcTrain_x.index.isin(class0)]
-print('# Full Training Set', mcTrain_x)
+#print('# Full Training Set', mcTrain_x)
 
 
 # # Construct & Run Neural Network
@@ -309,9 +309,11 @@ for index in range (0, 212): # 212 observations when we downsample healthy patie
     #epochs = [100, 150, 200, 250]
     
     # Define the model with hidden layers
-    model = nn.Sequential(nn.Linear(157, 50),
+    model = nn.Sequential(nn.Linear(157, 80),
                           nn.ReLU(),
-                          nn.Linear(50, 7))
+                          nn.Linear(80, 30),
+                          nn.ReLU(), 
+			  nn.Linear(30, 7))
                       
     # Set Stoachastic Gradient Descent Optimizer and the learning rate
     #optimizer = optim.SGD(model.parameters(), lr=0.003)
@@ -323,7 +325,7 @@ for index in range (0, 212): # 212 observations when we downsample healthy patie
     criterion = nn.CrossEntropyLoss() #don't use with softmax or sigmoid- PyTorch manual indicates "This criterion combines nn.LogSoftmax() and nn.NLLLoss() in one single class."
     
     # Set epochs - number of times the entire dataset will pass through the network
-    epochs = 500
+    epochs = 100
     for e in range(epochs):
         # Define running loss as 0
         running_loss = 0
@@ -343,8 +345,8 @@ for index in range (0, 212): # 212 observations when we downsample healthy patie
         
             running_loss += loss.item() # loss.item() gets the scalar value held in the loss. 
             # += function: Adds the running_loss (0) with loss.item and assigns back to running_loss
-        else:
-            print("Epoch {}/{}, Training loss: {:.5f}".format(e+1, epochs, running_loss/len(trainloader)))
+       #else:
+           #print("Epoch {}/{}, Training loss: {:.5f}".format(e+1, epochs, running_loss/len(trainloader)))
 
     # Apply the model to the testing dataset
     # Thus will enable us to see the predictions for each class
@@ -390,7 +392,7 @@ for index in range (0, 212): # 212 observations when we downsample healthy patie
     results_ls.append(results)
     incorrect_ls.append(incorrect)
     correct_ls.append(correct)
-    print(results_ls) 
+   #print(results_ls) 
 
 
 # # **Print out description of Experiment**
@@ -398,7 +400,7 @@ for index in range (0, 212): # 212 observations when we downsample healthy patie
 # In[21]:
 
 
-print('Hidden Layers: 50, Weight Decay: 0.10, LR: 0.01 , Epochs: 500')
+print('Hidden Layers: 80, 30, LR: 0.01 , Epochs: 500')
 
 
 # # **Determine LOOCV Mean Error**

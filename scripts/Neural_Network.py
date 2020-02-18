@@ -437,7 +437,7 @@ incorrect_pred.reset_index(level=0, inplace=True)
 incorrect_pred['diagnosis'] = incorrect_pred['diagnosis'].map({0: 'HEA', 1: 'CRC', 2: 'ESCA', 3: 'HCC', 4: 'STAD', 5:'GBM', 6:'BRCA'})
 
 # Add a column with the number of cases in each class
-class_size = mcTrain.groupby(['diagnosis']).size()
+class_size = mcTrain_x.groupby(['diagnosis']).size()
 class_size = pd.DataFrame(class_size)
 class_size.columns = ['Sample_n']
 
@@ -473,7 +473,7 @@ correct_pred.reset_index(level=0, inplace=True)
 correct_pred['diagnosis'] = correct_pred['diagnosis'].map({0: 'HEA', 1: 'CRC', 2: 'ESCA', 3: 'HCC', 4: 'STAD', 5:'GBM', 6:'BRCA'})
 
 # Add a column with the number of cases in each class
-class_size = mcTrain.groupby(['diagnosis']).size()
+class_size = mcTrain_x.groupby(['diagnosis']).size()
 class_size = pd.DataFrame(class_size)
 class_size.columns = ['Sample_n']
 

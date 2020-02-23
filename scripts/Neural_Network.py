@@ -24,7 +24,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.colors
 import seaborn as sns
-
+import sys
 
 # In[2]:
 
@@ -306,20 +306,25 @@ for index in range (0, 212): # 212 observations when we downsample healthy patie
     
     # Set parameters for grid search
     #lrs = [1e-2, 1e-3, 1e-4]
-    #epochs = [100, 150, 200, 250]
+    #epochs = [] # put in inputs to loop through
     
+    # summarize experiment with changed parameters
+    summary = ('Hidden Layers: 100, 50, 25,  LR: 0.001, Epochs: 100')
+    	
     # Define the model with hidden layers
-    model = nn.Sequential(nn.Linear(157, 80),
+    model = nn.Sequential(nn.Linear(157, 100),
                           nn.ReLU(),
-                          nn.Linear(80, 30),
-                          nn.ReLU(), 
-			  nn.Linear(30, 7))
+			  nn.Linear(100, 50),
+			  nn.ReLU(),
+                          nn.Linear(50, 25), 
+			  nn.ReLU(), 
+			  nn.Linear(25, 7))
                       
     # Set Stoachastic Gradient Descent Optimizer and the learning rate
     #optimizer = optim.SGD(model.parameters(), lr=0.003)
 
     # Set Adam optimizer: similar to stochastic gradient descent, but uses momentum which can speed up the actual fitting process, and it also adjusts the learning rate for each of the individual parameters in the model
-    optimizer = optim.Adam(model.parameters(), lr=0.01,  weight_decay=0.01) # we can also change momentum parameter
+    optimizer = optim.Adam(model.parameters(), lr=0.001,  weight_decay=0.01) # we can also change momentum parameter
 
     # loss function
     criterion = nn.CrossEntropyLoss() #don't use with softmax or sigmoid- PyTorch manual indicates "This criterion combines nn.LogSoftmax() and nn.NLLLoss() in one single class."
@@ -394,15 +399,6 @@ for index in range (0, 212): # 212 observations when we downsample healthy patie
     correct_ls.append(correct)
    #print(results_ls) 
 
-
-# # **Print out description of Experiment**
-
-# In[21]:
-
-
-print('Hidden Layers: 80, 30, LR: 0.01 , Epochs: 500')
-
-
 # # **Determine LOOCV Mean Error**
 
 # In[22]:
@@ -411,7 +407,7 @@ print('Hidden Layers: 80, 30, LR: 0.01 , Epochs: 500')
 percent_correct = sum(results_ls)
 percent_correct = percent_correct/len(mcTrain_y)*100
 percent_incorrect = 100 - percent_correct
-print('Percent Error', round(percent_incorrect, 1))
+percent_incorrect = round(percent_incorrect, 1)
 
 
 # # **Incorrect Predictions**
@@ -447,8 +443,9 @@ incorrect_pred = pd.merge(incorrect_pred, class_size, how="left", on="diagnosis"
 # Calculate the percent error for each class
 incorrect_pred['Count_Perc_Incorrect'] = incorrect_pred['Count']/incorrect_pred['Sample_n']
 incorrect_pred['Count_Perc_Incorrect'] = incorrect_pred['Count_Perc_Incorrect'].multiply(100)
+incorrect_pred = round(incorrect_pred, 1)
 
-print(round(incorrect_pred, 1))
+#print(round(incorrect_pred, 1))
 
 
 # # **Correct Predictions**
@@ -483,15 +480,23 @@ correct_pred = pd.merge(correct_pred, class_size, how="left", on="diagnosis")
 # Calculate the percent correct for each class
 correct_pred['Count_Perc_Correct'] = correct_pred['Count']/correct_pred['Sample_n']
 correct_pred['Count_Perc_Correct'] = correct_pred['Count_Perc_Correct'].multiply(100)
+correct_pred = round(correct_pred, 1)
 
-print(round(correct_pred, 1))
-
+#print(round(correct_pred, 1))
 
 # # **Save Predictions**
 
 # In[ ]:
 
 
-#correct_pred.to_csv('/home/mrh1996/Multi_Cancer_DL/04_Results/correct_preds.csv')
-#incorrect_pred.to_csv('/home/mrh1996/Multi_Cancer_DL/04_Results/incorrect_preds.csv')
+# convert float to string in order to save as a txt file
+percent_error = '     Percent Error'
+percent_error = str(percent_error)
+percent_incorrect = str(percent_incorrect)
 
+# save the pre-specified summary of the experiment which includes parameter specifications + percent error
+summary = summary + percent_error + percent_incorrect
+
+#Feb 21, 2020 Test
+print(summary)
+print(correct_pred)

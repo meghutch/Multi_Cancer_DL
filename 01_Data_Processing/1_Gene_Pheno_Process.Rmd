@@ -142,17 +142,17 @@ gene_count_t[,cols] = apply(gene_count_t[,cols], 2, function(x) as.numeric(as.ch
 cols = c(1:342)    
 gene_count_2t[,cols] = apply(gene_count_2t[,cols], 2, function(x) as.numeric(as.character(x)))
 
-# relevel the Cat so that healhy is the reference
+# relevel the Cat so that healhy status is the reference
 gene_count_t$Cat <- as.factor(gene_count_t$Cat)
 gene_count_t$Cat <- relevel(gene_count_t$Cat, ref="HEA")
 
 ## Create DESeq2Dataset object where ~ 1 indicates no design
-dds <- DESeqDataSetFromMatrix(countData = as.matrix(gene_count_2t), colData = gene_count_t, design = ~Cat)
+dds <- DESeqDataSetFromMatrix(countData = as.matrix(gene_count_2t), colData = gene_count_t, design = ~ Cat)
 
 # run deseq - I believe this is the whole RNA seq DEG pipeline - this performs normalization but also includes other steps 
 #dds <- DESeq(dds)
 
-# This performs the median of ratios method of normalization - not sure if it takes into account the design specifications? 
+# This performs the median of ratios method of normalization - it appears that the design function does not influence the estimateSizeFactors normalization process - whether or not design = ~ Cat or design = ~ 1, results are the same.
 dds <- estimateSizeFactors(dds)
 
 # View normalization factor

@@ -5,6 +5,8 @@
 This repository contains the code to construct deep learning neural networks that can take methylation data as inputs and predict cancer type.
 <p>&nbsp;</p>
 
+## **Folders:**
+
 **01_Data_Processing:** Contains the initital scripts to clean data
 
 **03_Analysis:** Scripts to carry out different analyses on the Full Cohort (7 different disease statuses) or the GI cohort (5 disease statuses). 

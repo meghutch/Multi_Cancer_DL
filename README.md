@@ -11,7 +11,7 @@ This repository contains the code to construct deep learning neural networks tha
 
 **scripts:** .py and sh batch scripts used to run code on server
 <p>&nbsp;</p>
-<p>&nbsp;</p>
+
 **03_Analysis Details:**
 
 **PCA scripts:**

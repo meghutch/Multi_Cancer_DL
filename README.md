@@ -3,7 +3,7 @@
 **Deep learning cancer classification using methylation profiles**
 
 This repository contains the code to construct deep learning neural networks that can take methylation data as inputs and predict cancer type.
-
+<p>&nbsp;</p>
 
 **01_Data_Processing:** Contains the initital scripts to clean data
 
@@ -12,7 +12,7 @@ This repository contains the code to construct deep learning neural networks tha
 **scripts:** .py and sh batch scripts used to run code on server
 <p>&nbsp;</p>
 
-**03_Analysis Details:**
+## **03_Analysis Details:**
 
 **PCA scripts:**
 

@@ -1,15 +1,17 @@
 # Multi_Cancer_DL
 
-Deep learning cancer classification using methylation profiles
+**Deep learning cancer classification using methylation profiles**
 
-This repository contains the code to construct deep learning neural networks that can take methylation data as inputs and predict cancer type. 
+This repository contains the code to construct deep learning neural networks that can take methylation data as inputs and predict cancer type.
+ <br />
+ <br />
+**- 01_Data_Processing:** Contains the initital scripts to clean data
 
-**01_Data_Processing:** Contains the initital scripts to clean data
+**- 03_Analysis:** Scripts to carry out different analyses on the Full Cohort (7 different disease statuses) or the GI cohort (5 disease statuses). 
 
-**03_Analysis:** Scripts to carry out different analyses on the Full Cohort (7 different disease statuses) or the GI cohort (5 disease statuses). 
-
-**scripts:** .py and sh batch scripts used to run code on server
-
+**= scripts:** .py and sh batch scripts used to run code on server
+ <br />
+  <br />
 **03_Analysis Details:**
 
 **PCA scripts:**
